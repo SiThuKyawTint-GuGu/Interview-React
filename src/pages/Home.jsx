@@ -7,6 +7,7 @@ import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import axios from 'axios';
 import { toBeChecked } from '@testing-library/jest-dom/dist/matchers';
+import { v4 as uuidv4 } from 'uuid'; 
 
 
 const Home = () => {
@@ -17,6 +18,7 @@ const Home = () => {
     const [nextpage, setnextpage] = useState('');
     const [optionid, setoptionid] = useState('');
     const [url, seturl] = useState([]);
+    const [id, setId] = useState('');
 
     //Error Status
     const [error, seterror] = useState([]);
@@ -55,29 +57,26 @@ const Home = () => {
 
     //Save
     const handlesave = () => {
-        const formdata = new FormData();
-        formdata.append('petname', petname);
-        formdata.append('pawrent', pawrent);
-        formdata.append('gender', gender);
-        formdata.append('contact', contact);
-        formdata.append('city', city);
-        formdata.append('status', status);
-        formdata.append('breed', breed);
-        formdata.append('time', time);
-        formdata.append('address', address);
-        formdata.append('township', township);
 
-        ax.post('createinfo', formdata).then(res => {
-            console.log(res.data.data)
-            if (res.data.type === 'success') {
-                setstore([...store,res.data.data])
-                toast.success('Patient is successfully created!', {
-                        theme: "colored"
-                });
-            } else {
-               seterror(res.data.data)
-           }
-        })
+
+        const newId = uuidv4();
+        const obj = {
+            id: newId,
+            petname: petname,
+            pawrent: pawrent,
+            gender: gender,
+            contact: contact,
+            city: city,
+            status: status,
+            breed: breed,
+            time: time,
+            address: address,
+            township:township   
+        }
+        setstore([obj, ...store])
+        toast.success('Patient is successfully created!', {
+            theme: "colored"
+        });
     }
 
     //For show
@@ -87,6 +86,7 @@ const Home = () => {
 
     //For Delete and Edit
     const handleoption = (id) => {
+        console.log(id);
         setoptionid(id);
         if (store.map(i=>id.id === id)) {
             setoption(!option)
@@ -101,47 +101,55 @@ const Home = () => {
         let obj = {
             id:id,
         }
-        ax.post('updatedata', obj).then(res => {
-            setpetname(res.data.data[0].petname)
-            setpawrent(res.data.data[0].pawrent)
-            setgender(res.data.data[0].gender)
-            setcontact(res.data.data[0].contact)
-            setcity(res.data.data[0].city)
-            setstatus(res.data.data[0].status)
-            setbreed(res.data.data[0].breed)
-            settime(res.data.data[0].date)
-            settownship(res.data.data[0].township)
-            setaddress(res.data.data[0].address)
-            setidcode(res.data.data[0].id_code)
-        })
+        // console.log(id);
+        const data = store.find(i => i.id === id);
+            setId(data.id)
+            setpetname(data.petname)
+            setpawrent(data.pawrent)
+            setgender(data.gender)
+            setcontact(data.contact)
+            setcity(data.city)
+            setstatus(data.status)
+            setbreed(data.breed)
+            settime(data.time)
+            settownship(data.township)
+            setaddress(data.address)
+            setidcode(data.id_code)
     }
 
-    //Update 
-    const updatefinaldata = () => {
-        const formdata = new FormData();
-        formdata.append('petname', petname);
-        formdata.append('pawrent', pawrent);
-        formdata.append('gender', gender);
-        formdata.append('contact', contact);
-        formdata.append('city', city);
-        formdata.append('status', status);
-        formdata.append('breed', breed);
-        formdata.append('time', time);
-        formdata.append('address', address);
-        formdata.append('township', township);
-        formdata.append('id_code',idcode)
-        ax.post('updatefinal', formdata,).then(res => {
-            if (res.data.type === 'success') {
-                    toast.success('Patient is successfully updated!', {
-                        theme: "colored"
-                    });
-                setTimeout(() => {
-                    window.location.reload(true);
-               },1000)
-            }
-        })
-    }
     
+    // onst doubleupdate = (id) => {
+    //     let actualElement = {
+    //         id: id,
+    //         text: edit,
+    //     }
+    //     setdata([{ id: id, ...actualElement }])
+    //     setModalVisible(false);
+    //     Toast.success('Successfully Updated!')
+    // }
+
+  
+    const updatefinaldata = () => {
+        const obj = {
+            id: id,
+            petname: petname,
+            pawrent: pawrent,
+            gender: gender,
+            contact: contact,
+            city: city,
+            status: status,
+            breed: breed,
+            time: time,
+            address: address,
+            township: township
+        }
+
+        setstore([{ id: id, ...obj }])
+        toast.success('Patient is successfully updated!', {
+            theme: "colored"
+        });
+    };
+
     
     //Delete
     const handledelete = (id) => {
@@ -155,14 +163,12 @@ const Home = () => {
                 {
                     label: 'Yes',
                     color:'red',
-                    onClick: () => ax.post('deleteitem', obj).then(res => {
-                        if (res.data.type === 'success') {
-                            setstore(store.filter(i => i.id !== id))
+                    onClick: () => {
+                        setstore(store.filter(i => i.id !== id))
                             toast.success('Patient is successfully deleted!', {
                                 theme: "colored"
                             });
-                        }
-                    })
+                    }
                 },
                 {
                     label: 'No',
@@ -292,7 +298,7 @@ const Home = () => {
                                                 <td>{ item.pawrent}</td>
                                                 <td>{ item.breed}</td>
                                                 <td>{ item.gender}</td>
-                                                <td>{ item.date}</td>
+                                                <td>{ item.time}</td>
                                                 <td>{ item.contact}</td>
                                                 <td>{ item.address}</td>
                                                 <td>
